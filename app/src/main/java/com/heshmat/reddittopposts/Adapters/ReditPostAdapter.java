@@ -1,12 +1,16 @@
 package com.heshmat.reddittopposts.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.heshmat.reddittopposts.FullScreenViewActivity;
 import com.heshmat.reddittopposts.R;
 import com.heshmat.reddittopposts.models.Children;
 import com.heshmat.reddittopposts.utils.DownloadImageTask;
@@ -62,11 +66,11 @@ public class ReditPostAdapter extends RecyclerView.Adapter<ReditPostAdapter.View
         }
     }
 
-    private void bindPost(Children children, ViewHolder holder) {
+    private void bindPost(final Children children, ViewHolder holder) {
         String authorName = children.getData().getAuthor();
         long createdAt = (long) children.getData().getCreatedUtc() * 1000;
         String commentNum = String.valueOf(children.getData().getNumComments());
-        String thumbUri = children.getData().getThumbnail();
+        final String thumbUri = children.getData().getThumbnail();
         String title = children.getData().getTitle();
         holder.authorNameTv.setText(authorName);
         holder.createdAtTv.setText(new Date(createdAt).toString());
@@ -74,6 +78,20 @@ public class ReditPostAdapter extends RecyclerView.Adapter<ReditPostAdapter.View
         holder.titleTv.setText(title);
         new DownloadImageTask(holder.thumbIv).execute(thumbUri);
 
+        if (children.getData().getImgURl() != null ) {
+            holder.thumbIv.setOnClickListener((View view)->{
+                    if (!children.getData().isVideo()) {
+                        Intent intent = new Intent(context, FullScreenViewActivity.class);
+                        intent.putExtra("IMG_URL", children.getData().getImgURl());
+                        context.startActivity(intent);
+                    } else if (children.getData().isVideo()){
+                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(children.getData().getImgURl()));
+                        context.startActivity(browserIntent);
+
+                    }
+
+            });
+        }
 
     }
 

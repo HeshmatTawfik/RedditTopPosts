@@ -44,6 +44,9 @@ public class Data {
     @Expose
     @SerializedName("after")
     private String after;
+    @Expose
+    @SerializedName("url_overridden_by_dest")
+    private String imgURl;
 
     public String getBefore() {
         return before;
@@ -146,6 +149,14 @@ public class Data {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getImgURl() {
+        return imgURl;
+    }
+
+    public void setImgURl(String imgURl) {
+        this.imgURl = imgURl;
     }
 
     @Override
