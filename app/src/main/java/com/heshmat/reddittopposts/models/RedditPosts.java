@@ -3,7 +3,7 @@ package com.heshmat.reddittopposts.models;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
-public class RedditResponse {
+public class RedditPosts {
 //https://www.reddit.com/top.json?after=t3_l78uct&limit=1
     @Expose
     @SerializedName("data")
