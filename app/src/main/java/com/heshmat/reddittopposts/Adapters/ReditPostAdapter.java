@@ -15,7 +15,9 @@ import com.heshmat.reddittopposts.FullScreenViewActivity;
 import com.heshmat.reddittopposts.R;
 import com.heshmat.reddittopposts.models.Children;
 import com.heshmat.reddittopposts.utils.DownloadImageTask;
+
 import java.util.List;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -83,7 +85,13 @@ public class ReditPostAdapter extends RecyclerView.Adapter<ReditPostAdapter.View
         holder.createdAtTv.setText(ago);
         holder.commentNumTv.setText(commentNum);
         holder.titleTv.setText(title);
-        new DownloadImageTask(holder.thumbIv).execute(thumbUri);
+        if (children.getData().getThumbBitmap() == null)
+            new DownloadImageTask(holder.thumbIv, children).execute(thumbUri);
+        else {
+            // used when the app restore the saved state, it get the thumbnail img from the object instead of downloading it again
+            holder.thumbIv.setVisibility(View.VISIBLE);
+            holder.thumbIv.setImageBitmap(children.getData().getThumbBitmap());
+        }
 
         if (children.getData().getImgURl() != null) {
             holder.thumbIv.setOnClickListener((View view) -> {
