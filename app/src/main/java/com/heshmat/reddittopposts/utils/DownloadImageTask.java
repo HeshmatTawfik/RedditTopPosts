@@ -39,5 +39,7 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     protected void onPostExecute(Bitmap result) {
         bmImage.setVisibility(View.VISIBLE);
         bmImage.setImageBitmap(result);
+        if (children!=null)
+            children.getData().setThumbBitmap(result);
     }
 }
