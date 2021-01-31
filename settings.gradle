@@ -1,0 +1,2 @@
+rootProject.name='Reddit Top Posts'
+include ':app'
