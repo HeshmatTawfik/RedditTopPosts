@@ -7,13 +7,21 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
+import com.heshmat.reddittopposts.models.Children;
+
 import java.io.InputStream;
 
 public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     ImageView bmImage;
+    private Children children;
 
     public DownloadImageTask(ImageView bmImage) {
         this.bmImage = bmImage;
+    }
+
+    public DownloadImageTask(ImageView bmImage, Children children) {
+        this.bmImage = bmImage;
+        this.children=children;
     }
 
     protected Bitmap doInBackground(String... urls) {
@@ -28,6 +36,7 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         }
         return mIcon11;
     }
+
 
     protected void onPostExecute(Bitmap result) {
 
