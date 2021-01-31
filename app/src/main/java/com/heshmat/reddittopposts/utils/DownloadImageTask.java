@@ -17,7 +17,7 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     public DownloadImageTask(ImageView bmImage) {
         this.bmImage = bmImage;
     }
-
+        // will be used in the post adapter to save the bitmap img in  child object
     public DownloadImageTask(ImageView bmImage, Children children) {
         this.bmImage = bmImage;
         this.children = children;
@@ -37,7 +37,6 @@ public class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
     }
 
     protected void onPostExecute(Bitmap result) {
-
         bmImage.setVisibility(View.VISIBLE);
         bmImage.setImageBitmap(result);
     }
