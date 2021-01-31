@@ -3,7 +3,8 @@ package com.heshmat.reddittopposts.Adapters;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
+import android.text.format.DateUtils;
+
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,10 +15,7 @@ import com.heshmat.reddittopposts.FullScreenViewActivity;
 import com.heshmat.reddittopposts.R;
 import com.heshmat.reddittopposts.models.Children;
 import com.heshmat.reddittopposts.utils.DownloadImageTask;
-
-import java.util.Date;
 import java.util.List;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -68,27 +66,37 @@ public class ReditPostAdapter extends RecyclerView.Adapter<ReditPostAdapter.View
 
     private void bindPost(final Children children, ViewHolder holder) {
         String authorName = children.getData().getAuthor();
-        long createdAt = (long) children.getData().getCreatedUtc() * 1000;
+        /**
+         * Reddit API returns the timestamp missing the last 3 digits for example if
+         * a post was created Sat Jan 30, 2021, 23:49 the timestamp should be 1612050579351
+         * but the API return 1612050579.0 so by casting to long and multiplying by 1000 we get the right timestamp
+         * which is 1612050579000 the difference between this timestamp and 1612050579351 is less than a second so
+         * it won't affect the date that is presented to the user
+         *  */
+        long createdUtc = (long) children.getData().getCreatedUtc() * 1000;
+        CharSequence ago = DateUtils.getRelativeTimeSpanString(createdUtc, System.currentTimeMillis(), DateUtils.MINUTE_IN_MILLIS);
+
         String commentNum = String.valueOf(children.getData().getNumComments());
         final String thumbUri = children.getData().getThumbnail();
         String title = children.getData().getTitle();
         holder.authorNameTv.setText(authorName);
-        holder.createdAtTv.setText(new Date(createdAt).toString());
+        holder.createdAtTv.setText(ago);
         holder.commentNumTv.setText(commentNum);
         holder.titleTv.setText(title);
         new DownloadImageTask(holder.thumbIv).execute(thumbUri);
 
-        if (children.getData().getImgURl() != null ) {
-            holder.thumbIv.setOnClickListener((View view)->{
-                    if (!children.getData().isVideo()) {
-                        Intent intent = new Intent(context, FullScreenViewActivity.class);
-                        intent.putExtra("IMG_URL", children.getData().getImgURl());
-                        context.startActivity(intent);
-                    } else if (children.getData().isVideo()){
-                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(children.getData().getImgURl()));
-                        context.startActivity(browserIntent);
+        if (children.getData().getImgURl() != null) {
+            holder.thumbIv.setOnClickListener((View view) -> {
+                if (!children.getData().isVideo()) {
+                    Intent intent = new Intent(context, FullScreenViewActivity.class);
+                    intent.putExtra("IMG_URL", children.getData().getImgURl());
+                    context.startActivity(intent);
+                } else if (children.getData().isVideo()) {
 
-                    }
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(children.getData().getImgURl()));
+                    context.startActivity(browserIntent);
+
+                }
 
             });
         }

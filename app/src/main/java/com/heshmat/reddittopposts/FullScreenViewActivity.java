@@ -3,12 +3,16 @@ package com.heshmat.reddittopposts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ImageView;
 
 import com.heshmat.reddittopposts.utils.DownloadImageTask;
 import com.heshmat.reddittopposts.utils.TouchImageView;
+
+import java.util.concurrent.ExecutionException;
 
 public class FullScreenViewActivity extends AppCompatActivity {
 
@@ -26,7 +30,15 @@ public class FullScreenViewActivity extends AppCompatActivity {
         });
 
         TouchImageView touchImageView=findViewById(R.id.imgDisplay);
-        new DownloadImageTask(touchImageView).execute(imgUrl);
+        try {
+            Bitmap bitmap= new DownloadImageTask(touchImageView).execute(imgUrl).get();
+            if (bitmap==null){ // check whether the link is an image or no
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(imgUrl));
+                startActivity(browserIntent);
+            }
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
     }
 }
