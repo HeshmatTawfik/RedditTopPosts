@@ -1,5 +1,4 @@
 package com.heshmat.reddittopposts;
-
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
@@ -8,27 +7,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-
 import android.app.AlertDialog;
 import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
-
 import com.heshmat.reddittopposts.Adapters.ReditPostAdapter;
 import com.heshmat.reddittopposts.api.RetrofitInit;
 import com.heshmat.reddittopposts.models.Children;
 import com.heshmat.reddittopposts.models.RedditPosts;
-
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private static final int LIMIT = 4;
+    private static final String SAVED_RECYCLER_VIEW_DATASET_ID = "RV_DATA";
+    private static final String SAVED_RECYCLER_VIEW_STATUS_ID = "RV_STATE";
+
     RecyclerView recyclerView;
     List<Children> children;
     ReditPostAdapter adapter;
@@ -44,19 +45,46 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        progressBar = findViewById(R.id.progressBar);
         prev = findViewById(R.id.prevBt);
         retrofitInit = RetrofitInit.getInstance();
         recyclerView = findViewById(R.id.postRv);
-        children = new ArrayList<>();
-        adapter = new ReditPostAdapter(this, children);
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+            GridLayoutManager gd = new GridLayoutManager(MainActivity.this, 1);
+            gd.onSaveInstanceState();
             recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 1));
         } else {
             recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
         }
-        recyclerView.setAdapter(adapter);
-        progressBar = findViewById(R.id.progressBar);
-        getFirstPage();
+        if (savedInstanceState != null) {
+            after = savedInstanceState.getString("after");
+            before = savedInstanceState.getString("before");
+            firstPageFlag = savedInstanceState.getString("firstPageFlag");
+
+            children = savedInstanceState.getParcelableArrayList(SAVED_RECYCLER_VIEW_DATASET_ID);
+
+            adapter = new ReditPostAdapter(this, children);
+            Parcelable listState = savedInstanceState.getParcelable(SAVED_RECYCLER_VIEW_STATUS_ID);
+            RecyclerView.LayoutManager lll = recyclerView.getLayoutManager();
+            recyclerView.getLayoutManager().onRestoreInstanceState(listState);
+            recyclerView.setAdapter(adapter);
+
+        } else if (savedInstanceState == null) {
+
+            children = new ArrayList<>();
+            adapter = new ReditPostAdapter(this, children);
+
+            if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                GridLayoutManager gd = new GridLayoutManager(MainActivity.this, 1);
+                gd.onSaveInstanceState();
+                recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 1));
+            } else {
+                recyclerView.setLayoutManager(new GridLayoutManager(MainActivity.this, 2));
+            }
+            recyclerView.setAdapter(adapter);
+            getFirstPage();
+
+        }
         listen = new MutableLiveData<>();
         listen.setValue(before);
         listen.observe(this, new Observer<String>() {
@@ -70,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
     }
 
     private void getFirstPage() {
@@ -102,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
         Log.i(TAG, "onFailure: " + t.fillInStackTrace());
         if (t instanceof UnknownHostException) {
             new AlertDialog.Builder(MainActivity.this).setMessage(getString(R.string.check_internet))
-                    .setPositiveButton(getString(R.string.ok),null)
+                    .setPositiveButton(getString(R.string.ok), null)
                     .show();
         } else
             new AlertDialog.Builder(MainActivity.this).setMessage(t.getLocalizedMessage()).show();
@@ -147,7 +174,13 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     public void getBefore(View view) {
+        getPreviousPage();
+
+    }
+
+    private void getPreviousPage() {
         if (firstPageFlag != null && !firstPageFlag.equals(after)) { // check if  first page
             progressBar = findViewById(R.id.progressBar);
             progressBar.setVisibility(View.VISIBLE);
@@ -191,10 +224,36 @@ public class MainActivity extends AppCompatActivity {
             listen.setValue(before);
 
         }
-
     }
+
 
     public boolean validateData(List<Children> childrenList) {
         return childrenList != null && !childrenList.isEmpty();
+    }
+
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Parcelable listState = Objects.requireNonNull(recyclerView.getLayoutManager()).onSaveInstanceState();
+        // putting recyclerview position
+        outState.putParcelable(SAVED_RECYCLER_VIEW_STATUS_ID, listState);
+        // putting recyclerview items
+        ArrayList<Children> childrenArrayList = new ArrayList<>(children);
+        outState.putParcelableArrayList(SAVED_RECYCLER_VIEW_DATASET_ID, childrenArrayList);
+        outState.putString("after", after);
+        outState.putString("before", before);
+        outState.putString("firstPageFlag", firstPageFlag);
+
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onBackPressed() {
+        // use back button to go back to previous posts page
+        if (prev.getVisibility() == View.VISIBLE)
+            getPreviousPage();
+        else // if user is already in first page exit app
+            super.onBackPressed();
     }
 }
