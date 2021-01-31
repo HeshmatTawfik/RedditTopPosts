@@ -8,7 +8,7 @@ import retrofit2.http.Query;
 
 public interface ApiInterface {
 
-    @GET("top.json?limit=2")
+    @GET("top.json?limit=4")
     Call<RedditPosts> getData();
     @GET("top.json")
     Call<RedditPosts> getDataBefore(@Query("before") String before, @Query("limit") int limit);

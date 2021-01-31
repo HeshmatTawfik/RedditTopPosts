@@ -2,4 +2,5 @@
     <string name="app_name">Reddit Top Posts</string>
     <string name="check_internet">Check your internet</string>
     <string name="img_saved">"The image was saved in the gallery "</string>
+    <string name="ok">Ok</string>
 </resources>
